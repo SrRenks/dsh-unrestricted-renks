@@ -59,6 +59,7 @@ const CASES = [
   { label: 'cordis', preset: 'cordis' },
   { label: 'cordis-plan', preset: 'cordis' },
   { label: 'subagent-standard', preset: 'standard', isSubagent: true },
+  { label: 'renks', preset: 'renks' },
 ]
 
 for (const { label, preset, isSubagent } of CASES) {
