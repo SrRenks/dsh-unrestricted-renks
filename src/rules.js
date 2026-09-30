@@ -22,7 +22,7 @@ export const ANCHORS = {
 }
 
 /** Preset ids this plugin knows how to fuse; anything else passes through untouched. */
-export const PRESETS = ['standard', 'ptc', 'cordis', 'minimal']
+export const PRESETS = ['standard', 'ptc', 'cordis', 'minimal', 'renks']
 
 /** Per-preset fusion shape: which persona anchors and which in-place notes apply. */
 export const PRESET_RULES = {
@@ -31,6 +31,12 @@ export const PRESET_RULES = {
   cordis: { persona: 'personaStandard', plan: true, ptcOnly: false, identity: true },
   // minimal's complete persona replaces the whole prompt, so no identity line exists.
   minimal: { persona: 'personaMinimal', plan: false, ptcOnly: false, identity: false },
+  // `renks` is a USER preset (${DSH_HOME}/.agent-presets/renks) derived from the
+  // shipped standard preset: its persona prefix/suffix, plan-mode section and
+  // tool catalog follow the standard composition, so it fuses on the standard
+  // anchors. tests/rules.spec.mjs re-checks the live preset files against those
+  // anchors whenever DSH_HOME is readable.
+  renks: { persona: 'personaStandard', plan: true, ptcOnly: false, identity: true },
 }
 
 /** Section the fusion adds; sits directly behind the persona, ahead of plan and tool guidance. */

@@ -1,15 +1,15 @@
 {
   "name": "dsh-unrestricted",
-  "version": "0.2.1",
+  "version": "0.2.1-renks.1",
   "private": true,
-  "description": "Toggleable unrestricted mode for DeepSeek Harness: fuses execution rules into the active standard, ptc, cordis, minimal, and subagent prompts",
+  "description": "Toggleable unrestricted mode for DeepSeek Harness: fuses execution rules into the active standard, ptc, cordis, minimal, renks, and subagent prompts",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yexi-by/dsh-unrestricted.git"
+    "url": "https://github.com/SrRenks/dsh-unrestricted-renks.git"
   },
-  "homepage": "https://github.com/yexi-by/dsh-unrestricted#readme",
-  "bugs": "https://github.com/yexi-by/dsh-unrestricted/issues",
+  "homepage": "https://github.com/SrRenks/dsh-unrestricted-renks#readme",
+  "bugs": "https://github.com/SrRenks/dsh-unrestricted-renks/issues",
   "type": "module",
   "main": "src/node.js",
   "exports": {

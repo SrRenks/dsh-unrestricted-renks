@@ -60,10 +60,16 @@ const CASES = [
   { label: 'cordis', preset: 'cordis' },
   { label: 'cordis-plan', preset: 'cordis' },
   { label: 'subagent-standard', preset: 'standard', isSubagent: true },
+  // `renks` is a USER preset that ships no capture of its own: it is derived
+  // from the standard composition, so the standard captures replay under its
+  // preset id. The drift guard at the end of this file re-checks the live
+  // preset files against the anchors that replay relies on.
+  { label: 'standard', preset: 'renks' },
+  { label: 'standard-plan', preset: 'renks' },
 ]
 
 for (const { label, preset, isSubagent } of CASES) {
-  test(`fuses ${label}: anchors pass, nothing lost, only documented deltas`, async () => {
+  test(`fuses ${label} as ${preset}: anchors pass, nothing lost, only documented deltas`, async () => {
     const sections = await sectionsOf(label)
     const result = fuseSections(sections, preset, { isSubagent })
     assert.equal(result.issues, undefined, `unexpected issues: ${result.issues}`)
@@ -344,6 +350,9 @@ test('contractAdditions describes exactly what each preset receives', () => {  c
 
 test('fixture coverage: every shipped preset was captured', async () => {
   for (const preset of PRESETS) {
+    // `renks` is a user preset: no shipped capture exists, and the replay cases
+    // above cover it through the standard fixtures.
+    if (preset === 'renks') continue
     const sections = await sectionsOf(preset)
     assert.ok(sections.length > 0, `missing fixture for ${preset}`)
   }
@@ -386,4 +395,68 @@ test('runtime coordination coordinates with PTC, Plan mode, structured subagents
   assert.ok(EXECUTION_MODE_BLOCK.includes('Formulate unabridged technical procedures'))
   assert.ok(EXECUTION_MODE_BLOCK.includes('Structured subagents: `structured_output` enforces the report schema'))
   assert.ok(EXECUTION_MODE_BLOCK.includes('sandbox denials, approval outcomes, plan-mode state'))
+})
+
+/**
+ * Dedented text of the first `section: |` block scalar belonging to the row
+ * `id` in an agent-preset composition.
+ * @param source - the YAML composition text.
+ * @param id - the row id whose block scalar to read.
+ * @returns the block text, or undefined when that row declares none.
+ */
+function inlineSection(source, id) {
+  const lines = source.split('\n')
+  const rowAt = lines.findIndex(line => line.trim().replace(/^-\s+/, '') === `id: ${id}`)
+  if (rowAt < 0) return undefined
+  const nextRow = lines.findIndex((line, index) => index > rowAt && /^\s*- id: /.test(line))
+  const limit = nextRow < 0 ? lines.length : nextRow
+  let start = -1
+  for (let index = rowAt + 1; index < limit; index++) {
+    if (/^\s*section: \|\s*$/.test(lines[index])) { start = index; break }
+  }
+  if (start < 0) return undefined
+  const keyIndent = lines[start].search(/\S/)
+  const body = []
+  for (let index = start + 1; index < limit; index++) {
+    const line = lines[index]
+    if (line.trim() !== '' && line.search(/\S/) <= keyIndent) break
+    body.push(line)
+  }
+  const content = body.filter(line => line.trim() !== '')
+  if (content.length === 0) return ''
+  const base = Math.min(...content.map(line => line.search(/\S/)))
+  return body.map(line => (line.trim() === '' ? '' : line.slice(base))).join('\n').trim()
+}
+
+/**
+ * Drift guard for the fork's `renks` mode. The user preset is fusable only
+ * while it keeps the standard persona prefix and plan-mode opening, because
+ * that is exactly what the fusion anchors on. Reads the live preset when this
+ * machine has one and skips otherwise.
+ */
+test('renks drift guard: the live user preset still matches the standard anchors', async (t) => {
+  const home = process.env.DSH_HOME ?? join(process.env.HOME ?? '', '.dsh')
+  const file = join(home, '.agent-presets', 'renks', 'agent.cordis.yml')
+  let source
+  try {
+    source = await readFile(file, 'utf8')
+  } catch {
+    t.skip(`no renks preset at ${file}`)
+    return
+  }
+
+  // Persona: the `@deepseek-ai/dsh-persona` row's prefix must be the standard
+  // anchor verbatim; the `{{cwd}}` suffix lives in its own section.
+  assert.ok(
+    source.includes(ANCHORS.personaStandard),
+    'renks persona prefix no longer matches ANCHORS.personaStandard',
+  )
+
+  // Plan mode: the inline section must still open with the plan anchor sentence.
+  const plan = inlineSection(source, 'plan-mode')
+  assert.notEqual(plan, undefined, 'renks preset no longer declares an inline plan-mode section')
+  assert.ok(
+    plan.startsWith(ANCHORS.planPrefix),
+    `renks plan section now opens with ${JSON.stringify(plan.slice(0, 80))}`,
+  )
 })
