@@ -429,27 +429,58 @@ function inlineSection(source, id) {
 }
 
 /**
+ * Candidate files holding the live `renks` composition, newest format first.
+ *
+ * DSH 0.1.7 moved agent presets out of `$DSH_HOME/.agent-presets/<id>/` and into
+ * plugin-bundle declarations: a preset is now an `@deepseek-ai/dsh-agent-preset`
+ * row whose `config.plugins` carries the old entry list. Both shapes are checked
+ * so this guard keeps working across the migration; the first readable file wins.
+ *
+ * @param dshHome - the resolved DSH home.
+ * @returns absolute paths to try, in order.
+ */
+function renksCandidates(dshHome) {
+  const override = process.env.DSH_RENKS_PRESET
+  return [
+    ...(override === undefined ? [] : [override]),
+    // Migrated shape: the bundle installed into a profile.
+    join(dshHome, 'profiles', 'web', 'node_modules', 'dsh-user-presets', 'presets', 'renks.patch.yml'),
+    join(dshHome, 'profiles', 'dsh-tui', 'node_modules', 'dsh-user-presets', 'presets', 'renks.patch.yml'),
+    // Pre-migration shape: the legacy directory preset.
+    join(dshHome, '.agent-presets', 'renks', 'agent.cordis.yml'),
+  ]
+}
+
+/**
  * Drift guard for the fork's `renks` mode. The user preset is fusable only
  * while it keeps the standard persona prefix and plan-mode opening, because
- * that is exactly what the fusion anchors on. Reads the live preset when this
- * machine has one and skips otherwise.
+ * that is exactly what the fusion anchors on. Reads whichever live shape exists
+ * on this machine and skips otherwise.
  */
 test('renks drift guard: the live user preset still matches the standard anchors', async (t) => {
   const home = process.env.DSH_HOME ?? join(process.env.HOME ?? '', '.dsh')
-  const file = join(home, '.agent-presets', 'renks', 'agent.cordis.yml')
   let source
-  try {
-    source = await readFile(file, 'utf8')
-  } catch {
-    t.skip(`no renks preset at ${file}`)
+  let file
+  for (const candidate of renksCandidates(home)) {
+    try {
+      source = await readFile(candidate, 'utf8')
+      file = candidate
+      break
+    } catch {
+      continue
+    }
+  }
+  if (source === undefined) {
+    t.skip(`no renks preset under ${home}`)
     return
   }
+  t.diagnostic(`checked ${file}`)
 
   // Persona: the `@deepseek-ai/dsh-persona` row's prefix must be the standard
   // anchor verbatim; the `{{cwd}}` suffix lives in its own section.
   assert.ok(
     source.includes(ANCHORS.personaStandard),
-    'renks persona prefix no longer matches ANCHORS.personaStandard',
+    `renks persona prefix in ${file} no longer matches ANCHORS.personaStandard`,
   )
 
   // Plan mode: the inline section must still open with the plan anchor sentence.
