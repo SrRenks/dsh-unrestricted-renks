@@ -19,7 +19,7 @@
 下面的命令把当前版本安装到 DSH 的 `web` profile：
 
 ```sh
-dsh plugin --profile web add github:yexi-by/dsh-unrestricted#v0.2.1
+dsh plugin --profile web add github:SrRenks/dsh-unrestricted-renks#v0.2.2-renks.1
 ```
 
 安装后重启 `dsh web`，然后进入侧栏 `插件 → 破限模式` 打开开关。开关状态保存在 `~/.dsh/profiles/web/cordis.patch.yml` 的 `id: unrestricted` 条目的 `config.enabled` 中，重启后仍然有效。
@@ -27,7 +27,7 @@ dsh plugin --profile web add github:yexi-by/dsh-unrestricted#v0.2.1
 如需安装仓库中的最新代码，可以省略版本号：
 
 ```sh
-dsh plugin --profile web add github:yexi-by/dsh-unrestricted
+dsh plugin --profile web add github:SrRenks/dsh-unrestricted-renks
 ```
 
 GitHub 安装直接使用仓库中已经构建好的 `lib/client.js`，不需要 npm 发布，也不需要授予依赖构建权限。
