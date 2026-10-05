@@ -1,6 +1,6 @@
 # dsh-unrestricted
 
-> **Fork note (SrRenks/dsh-unrestricted-renks, v0.2.1-renks.1).** This tree is
+> **Fork note (SrRenks/dsh-unrestricted-renks, v0.2.2-renks.1).** This tree is
 > upstream `dsh-unrestricted` v0.2.1 (yexi-by) with one addition re-applied on
 > the 0.2.0-rc.2 base: the user preset **`renks`**
 > (`${DSH_HOME:-$HOME/.dsh}/.agent-presets/renks`) is now a fusable mode. That
@@ -10,7 +10,7 @@
 > extra `PRESETS`/`PRESET_RULES` entry, the extra card row/locale strings, and
 > the drift guard in `tests/rules.spec.mjs`.
 
-当前版本 0.2.1 适配 DSH 0.2.0-rc.2（`639ed01539`）。在侧栏「插件 → 破限模式」打开配置。配置通过本体 ConfigEditor 保存到当前 profile 的 `cordis.patch.yml`，由 volatile Config 热更新。
+当前版本 0.2.2 适配 DSH 0.2.0-rc.2（`639ed01539`）。在侧栏「插件 → 破限模式」打开配置。配置通过本体 ConfigEditor 保存到当前 profile 的 `cordis.patch.yml`，由 volatile Config 热更新。
 
 为 DeepSeek Harness（DSH）Web 提供可随时开关的破限提示词。它把一份**交付契约**融合进 Standard、PTC、Cordis、Minimal、Renks 及其子代理的最新原版系统提示词；关闭后完全恢复 DSH 官方提示词。开启前可以在设置卡片中预览即将写入的完整提示词。
 
